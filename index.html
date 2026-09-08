@@ -1,0 +1,34 @@
+<!--
+  @file    index.html
+  @brief   MARVIN 3D Web 示教大屏：SPA 入口 HTML，加载 Vue 3 应用
+  @author Csihan
+  @date    2026-08-28
+
+  功能说明：
+    1. 页面语言设为中文（lang="zh-CN"），有利于屏幕阅读器与搜索引擎识别；
+    2. 预连接 Google Fonts（Orbitron 3D 标题 + Rajdhani 正文 + Share Tech Mono 等宽）；
+    3. viewport 锁定为设备宽度、初始缩放 1.0，适配全屏大屏显示；
+    4. #app 为 Vue 3 挂载点，main.ts 负责 createApp + mount。
+
+  构建工具：Vite 5.x（vite.config.ts 只挂 @vitejs/plugin-vue）；
+  静态资源：/public 下的 favicon.svg、/models/ 下的 URDF/mesh 在构建时原样复制。
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google Fonts 预连接：提前建立 TLS 握手，减少首屏字体加载延迟 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- 字体加载：Orbitron（3D 标题）、Rajdhani（正文）、Share Tech Mono（等宽数据） -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <title>双臂人形轮式机器人</title>
+  </head>
+  <body>
+    <!-- Vue 3 挂载点：main.ts 中 createApp(App).mount('#app') -->
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

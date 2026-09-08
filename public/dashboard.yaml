@@ -1,0 +1,52 @@
+# ============================================================
+# dashboard.yaml —— MARVIN Web 大屏运行配置（唯一外部配置入口）
+#
+# @file    dashboard.yaml
+# @brief   Web 大屏全部"现场可调"参数：rosbridge 地址/自愈参数、示教文件服务、安全门禁
+# @author Csihan
+# @date    2026-09-03
+#
+# 生效机制（为什么这样设计）：
+#   1. 本文件放在 public/ 下，vite build 时原样复制到 dist/dashboard.yaml；
+#      页面启动时（main.ts）先 fetch /dashboard.yaml 解析，成功后才挂载应用——
+#      因此改完本文件只需浏览器 F5，无需重新构建；
+#   2. 任何键缺失/写错类型/文件不存在，都会回退到 src/config/dashboardConfig.ts
+#      里的内置默认值（与 2026-09-03 改造前的硬编码行为完全一致），配错不会白屏；
+#   3. 现场改配置的推荐姿势：改部署机上的 dist/dashboard.yaml → F5 生效；
+#      长期基线请同步改回本文件（public/dashboard.yaml），防止下次构建把现场值覆盖掉；
+#   4. host 的取值口径：
+#      - auto = 跟随浏览器访问页面所用的主机名（页面与 ROS 同机部署时推荐，
+#        局域网换 IP/主机名都零改动）；
+#      - 具体 IP/主机名 = 页面与 ROS 分机部署时，填 ROS 主机固定 IP（如 192.168.1.50）。
+#   5. 话题名/服务名（/robot/status 等）属协议 V1.0.8 冻结项，刻意不开放配置，
+#      防止误改造成前端与 comms 静默断链。
+# ============================================================
+
+# —— rosbridge WebSocket 数据桥（/robot/status 订阅 + 全部命令下发） ——
+ros_bridge:
+  host: auto          # auto=跟随页面主机；分机部署填 ROS 主机 IP（如 192.168.1.50）
+  port: 9090          # rosbridge_server 默认端口（rosbridge_websocket.launch 启动）
+  protocol: ws        # ws=http 明文；wss=https 加密（需自建证书，当前未部署）
+
+  # —— 链路自愈参数（2026-08-30 E2E 实战教训：半开连接必须主动探测/强制重连） ——
+  reconnect_initial_ms: 2000    # 断线首次重连延迟（之后指数退避 ×1.5）
+  reconnect_max_ms: 10000       # 重连延迟上限
+  data_watchdog_ms: 12000       # 已连接但持续无入站数据的判定阈值（TCP 假活自愈）
+  canary_interval_ms: 6000      # 出站金丝雀探测周期（入站活/出站死的半开态自愈）
+  canary_timeout_ms: 2500       # 金丝雀单次探测超时（超时强制重连）
+  service_timeout_ms: 4000      # 单次服务调用无响应超时（超时触发重连自愈）
+
+# —— 示教文件服务（运动表 YAML/CSV、夹爪预设读写；tools/file_server.py 同读本文件） ——
+file_server:
+  # auto = 服务端绑定 0.0.0.0（监听全部网卡，局域网部署必须；请务必仅在受信任的网络环境使用！）
+  #        前端连接地址跟随页面主机；仅本机调试想收紧可改 127.0.0.1（服务端+前端都只走回环）
+  host: auto
+  port: 8765          # 示教文件服务端口（tools/file_server.py 同读本文件，两端保持一致）
+
+# —— 安全门禁 ——
+safety:
+  # 与 App.vue 原 SIMULATION_ONLY 常量同口径（2026-09-03 起改为可配置）：
+  #   true  = 正常模式：命令经 useCommandBus 双门禁（simulation_only + connected）后下发
+  #   false = 冻结模式：sendCommand / sendStream 全部短路返回，任何运动命令都到不了后端；
+  #           resetAllArms（恢复双臂）会追加二次确认弹窗
+  simulation_only: true

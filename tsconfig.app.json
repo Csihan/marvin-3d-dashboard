@@ -1,0 +1,27 @@
+// @file    tsconfig.app.json
+// @brief   应用层 TypeScript 配置：继承 Vue DOM 基线，覆盖编译选项
+// @author  Csihan
+// @date    2026-08-28
+//
+// 说明：
+//   - extends @vue/tsconfig/tsconfig.dom.json：预设 DOM 环境类型、target/module 等；
+//   - types: ["vite/client"]：引入 Vite 客户端类型（import.meta.env 等）；
+//   - allowArbitraryExtensions：允许 .vue 文件作为模块导入（Vue SFC 支持）；
+//   - noUnusedLocals / noUnusedParameters：严格未使用变量检查，防止死代码；
+//   - erasableSyntaxOnly：只允许可擦除语法（TS 5.8+，禁止 enum 等运行时不可擦除语法）；
+//   - noFallthroughCasesInSwitch：switch 语句禁止隐式穿透。
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+}

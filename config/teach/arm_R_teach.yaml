@@ -1,0 +1,7 @@
+# 右臂示教数据（拖动采样/手动补点产出；总协调按导出 CSV 消费）
+# @file    arm_R_teach.yaml
+# @brief   右臂 named_points 示教点位存储（file_server.py 白名单资源 arm_R）
+# @author  Csihan
+# @date    2026-08-27
+replay_auto_enable: false   # 自动回放授权开关：项目现场完成授权确认后才允许改 true
+named_points: []            # [{name,x,y,z,qw,qx,qy,qz,j:[7 个 deg]}]

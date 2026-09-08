@@ -1,0 +1,41 @@
+# ============================================================
+# .github/workflows/ci.yml — Web 仪表盘 CI 门禁
+# @file    ci.yml
+# @brief   依赖安装 → 单元测试 → 生产构建（PR / push 自动触发）
+# @author Csihan
+# @date    2026-09-03
+#
+# [2026-09-03 仓库拆分整改] web-dashboard 已拆为独立仓库，此前外层失效
+# workflow 只覆盖 ROS 侧；按"每个仓库自包含"原则补齐本仓库 CI。
+# Node 版本取 package.json engines 口径的现行 LTS（20.x）。
+# ============================================================
+name: Web CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test-and-build:
+    name: npm ci + vitest + vite build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build

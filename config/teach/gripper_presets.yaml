@@ -1,0 +1,6 @@
+# 夹爪预设（面板保存产出）：position_mm 开度 / force_pct 力度 / speed_pct 速度
+# @file    gripper_presets.yaml
+# @brief   夹爪预设参数存储（file_server.py 白名单资源 gripper-presets）
+# @author  Csihan
+# @date    2026-08-27
+presets: {}

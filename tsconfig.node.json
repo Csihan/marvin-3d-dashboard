@@ -1,0 +1,35 @@
+// @file    tsconfig.node.json
+// @brief   Node.js 构建配置：仅供 vite.config.ts 编译（ESM Node 环境）
+// @author  Csihan
+// @date    2026-08-28
+//
+// 说明：
+//   - target: es2023 / module: nodenext：Vite 构建脚本运行在 Node 18+，支持 ESM 原生导入；
+//   - types: ["node"]：引入 Node.js 全局类型（process、__dirname 等）；
+//   - allowImportingTsExtensions：允许 import './foo.ts'（Vite 开发服务器直接处理 .ts）；
+//   - verbatimModuleSyntax：import/export 语义与运行时完全一致（禁止 type-only import 被擦除）；
+//   - noEmit：不输出文件（Vite 自行打包，TypeScript 只做类型检查）；
+//   - skipLibCheck：跳过 node_modules 类型检查（加快编译速度）。
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "module": "nodenext",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["vite.config.ts"]
+}

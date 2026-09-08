@@ -1,0 +1,18 @@
+// @file    tsconfig.json
+// @brief   TypeScript 项目根配置：引用结构模式，App 代码与 Node 构建分开编译
+// @author  Csihan
+// @date    2026-08-28
+//
+// 说明：
+//   - files: [] 表示根配置不直接编译任何文件，只作为引用容器；
+//   - references：项目分为两套编译目标：
+//     ① tsconfig.app.json → src/ 下的 Vue/TS 组件（DOM 环境）；
+//     ② tsconfig.node.json → vite.config.ts（Node.js 环境）。
+//   - 使用 project references 支持增量编译（vue-tsc -b 自动走引用）。
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}

@@ -1,0 +1,325 @@
+<?xml version="1.0"?>
+<!-- ============================================================
+     demo_robot.urdf —— 开源示例机器人模型（双臂轮式人形 demo）
+     @file    demo_robot.urdf
+     @brief   内置开源示例：用 URDF primitive 几何(box/cylinder)搭建的
+              双臂 7-DOF + 4WS 底盘 + 升降躯干 + 双轴头部整机模型
+     @author  Csihan
+     @date    2026-09-08
+
+     为什么用 primitive 而不是 mesh 文件（教学说明）：
+       1. 版权零风险：primitive 由 urdf-loader 直接解析生成几何，
+          不分发任何第三方 STL/GLB 资产；
+       2. 仓库轻量：纯文本 XML（本文件 <40KB），克隆即用，无需 LFS；
+       3. 逻辑兼容：关节命名与本大屏 useRobot3D.ts 的驱动逻辑完全对齐——
+          Joint1~7_L/R 双臂、gripper_L/R_joint 夹爪、head_yaw/pitch_joint
+          头部、torso_lift_joint/torso_pitch_joint 躯干升降/弯腰、
+          4 轮 4 转向关节，/joint_states 上报同名关节即可驱动 3D。
+
+     坐标约定（与 src/scene/orientation.ts 的 MODEL_YAW=π 语义一致）：
+       - Z 轴朝上（ROS/URDF 惯例），base_footprint 位于地面原点；
+       - 机器人正面朝 URDF 的 -X（加载后 MODEL_YAW 把正面转到世界 +X
+         面对相机）；左臂在 URDF +Y 一侧（画面左侧，与 SCREEN_LEFT_IS 一致）；
+       - 所有长度单位为米，角度单位为弧度（URDF 标准）。
+
+     接入真实机器人：把你的 URDF 放到 public/models/urdf/ 并改
+     src/composables/useRobot3D.ts 的 loader.load 路径；若使用 package://
+     mesh 路径，按文件内 PACKAGE_MAP 注释补包名映射（见 README）。
+     ============================================================ -->
+<robot name="demo_dual_arm_wheeled">
+
+  <!-- ─── 材质定义（primitive 几何直接引用，urdf-loader 原生支持） ─── -->
+  <material name="chassis_dark"><color rgba="0.22 0.27 0.31 1"/></material>
+  <material name="body_silver"><color rgba="0.62 0.69 0.76 1"/></material>
+  <material name="arm_silver"><color rgba="0.68 0.73 0.78 1"/></material>
+  <material name="gripper_orange"><color rgba="0.85 0.38 0.10 1"/></material>
+  <material name="wheel_black"><color rgba="0.12 0.13 0.15 1"/></material>
+  <material name="head_dark"><color rgba="0.25 0.29 0.34 1"/></material>
+
+  <!-- ─── 根 link：脚印（地面投影原点，不渲染几何） ─── -->
+  <link name="base_footprint"/>
+
+  <!-- 底盘本体 -->
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="base_link">
+    <visual>
+      <!-- 主箱体：前后沿 X（正面朝 -X），左右沿 Y，底面高 z≈0.18 -->
+      <origin xyz="0 0 0.28" rpy="0 0 0"/>
+      <geometry><box size="0.70 0.48 0.20"/></geometry>
+      <material name="chassis_dark"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.28" rpy="0 0 0"/>
+      <geometry><box size="0.70 0.48 0.20"/></geometry>
+    </collision>
+  </link>
+
+  <!-- ─── 4 轮 4 转向（front 组在 -X 侧 = 机器人正面） ─── -->
+  <!-- 左前 -->
+  <joint name="front_left_steer_joint" type="revolute">
+    <parent link="base_link"/><child link="front_left_steer_link"/>
+    <origin xyz="-0.25 0.22 0.12" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-1.5708" upper="1.5708" effort="10" velocity="1"/>
+  </joint>
+  <link name="front_left_steer_link">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><cylinder radius="0.05" length="0.08"/></geometry><material name="chassis_dark"/></visual>
+  </link>
+  <joint name="front_left_wheel_joint" type="continuous">
+    <parent link="front_left_steer_link"/><child link="front_left_wheel_link"/>
+    <origin xyz="0 0.05 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit effort="10" velocity="10"/>
+  </joint>
+  <link name="front_left_wheel_link">
+    <visual><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry><material name="wheel_black"/></visual>
+    <collision><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry></collision>
+  </link>
+  <!-- 右前 -->
+  <joint name="front_right_steer_joint" type="revolute">
+    <parent link="base_link"/><child link="front_right_steer_link"/>
+    <origin xyz="-0.25 -0.22 0.12" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-1.5708" upper="1.5708" effort="10" velocity="1"/>
+  </joint>
+  <link name="front_right_steer_link">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><cylinder radius="0.05" length="0.08"/></geometry><material name="chassis_dark"/></visual>
+  </link>
+  <joint name="front_right_wheel_joint" type="continuous">
+    <parent link="front_right_steer_link"/><child link="front_right_wheel_link"/>
+    <origin xyz="0 -0.05 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit effort="10" velocity="10"/>
+  </joint>
+  <link name="front_right_wheel_link">
+    <visual><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry><material name="wheel_black"/></visual>
+    <collision><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry></collision>
+  </link>
+  <!-- 左后 -->
+  <joint name="rear_left_steer_joint" type="revolute">
+    <parent link="base_link"/><child link="rear_left_steer_link"/>
+    <origin xyz="0.25 0.22 0.12" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-1.5708" upper="1.5708" effort="10" velocity="1"/>
+  </joint>
+  <link name="rear_left_steer_link">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><cylinder radius="0.05" length="0.08"/></geometry><material name="chassis_dark"/></visual>
+  </link>
+  <joint name="rear_left_wheel_joint" type="continuous">
+    <parent link="rear_left_steer_link"/><child link="rear_left_wheel_link"/>
+    <origin xyz="0 0.05 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit effort="10" velocity="10"/>
+  </joint>
+  <link name="rear_left_wheel_link">
+    <visual><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry><material name="wheel_black"/></visual>
+    <collision><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry></collision>
+  </link>
+  <!-- 右后 -->
+  <joint name="rear_right_steer_joint" type="revolute">
+    <parent link="base_link"/><child link="rear_right_steer_link"/>
+    <origin xyz="0.25 -0.22 0.12" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-1.5708" upper="1.5708" effort="10" velocity="1"/>
+  </joint>
+  <link name="rear_right_steer_link">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><cylinder radius="0.05" length="0.08"/></geometry><material name="chassis_dark"/></visual>
+  </link>
+  <joint name="rear_right_wheel_joint" type="continuous">
+    <parent link="rear_right_steer_link"/><child link="rear_right_wheel_link"/>
+    <origin xyz="0 -0.05 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit effort="10" velocity="10"/>
+  </joint>
+  <link name="rear_right_wheel_link">
+    <visual><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry><material name="wheel_black"/></visual>
+    <collision><origin xyz="0 0 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.12" length="0.06"/></geometry></collision>
+  </link>
+
+  <!-- ─── 躯干升降（prismatic 0~0.55m：与 utils/chassisUnits.ts 的
+         liftMmToUrdf 映射口径一致——903.3~1453.3mm 绝对高度 ↔ 0~0.55m 滑台） ─── -->
+  <joint name="torso_lift_joint" type="prismatic">
+    <parent link="base_link"/><child link="torso_lift_link"/>
+    <origin xyz="0 0 0.38" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="0" upper="0.55" effort="100" velocity="0.1"/>
+  </joint>
+  <link name="torso_lift_link">
+    <visual><origin xyz="0 0 0.06" rpy="0 0 0"/><geometry><box size="0.16 0.16 0.12"/></geometry><material name="chassis_dark"/></visual>
+    <collision><origin xyz="0 0 0.06" rpy="0 0 0"/><geometry><box size="0.16 0.16 0.12"/></geometry></collision>
+  </link>
+
+  <!-- 躯干弯腰（revolute ±1.5708rad=±90°：与 BEND_MIN/MAX_DEG 口径一致） -->
+  <joint name="torso_pitch_joint" type="revolute">
+    <parent link="torso_lift_link"/><child link="torso_link"/>
+    <origin xyz="0 0 0.12" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit lower="-1.5708" upper="1.5708" effort="100" velocity="0.5"/>
+  </joint>
+  <link name="torso_link">
+    <visual><origin xyz="0 0 0.19" rpy="0 0 0"/><geometry><box size="0.26 0.34 0.34"/></geometry><material name="body_silver"/></visual>
+    <collision><origin xyz="0 0 0.19" rpy="0 0 0"/><geometry><box size="0.26 0.34 0.34"/></geometry></collision>
+  </link>
+
+  <!-- ─── 头部（yaw 摇头绕 z / pitch 点头绕 y，均 ±90°） ─── -->
+  <joint name="head_yaw_joint" type="revolute">
+    <parent link="torso_link"/><child link="head_yaw_link"/>
+    <origin xyz="0 0 0.40" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-1.5708" upper="1.5708" effort="20" velocity="1"/>
+  </joint>
+  <link name="head_yaw_link">
+    <visual><origin xyz="0 0 0.035" rpy="0 0 0"/><geometry><cylinder radius="0.04" length="0.07"/></geometry><material name="head_dark"/></visual>
+  </link>
+  <joint name="head_pitch_joint" type="revolute">
+    <parent link="head_yaw_link"/><child link="head_link"/>
+    <origin xyz="0 0 0.07" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit lower="-1.5708" upper="1.5708" effort="20" velocity="1"/>
+  </joint>
+  <link name="head_link">
+    <visual><origin xyz="-0.02 0 0.10" rpy="0 0 0"/><geometry><box size="0.16 0.14 0.18"/></geometry><material name="head_dark"/></visual>
+    <collision><origin xyz="-0.02 0 0.10" rpy="0 0 0"/><geometry><box size="0.16 0.14 0.18"/></geometry></collision>
+  </link>
+
+  <!-- ─── 左臂（7-DOF，肩挂在躯干左侧 +Y；全零位=水平前伸） ─── -->
+  <joint name="Joint1_L" type="revolute">
+    <parent link="torso_link"/><child link="Link1_L"/>
+    <origin xyz="0 0.20 0.28" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-2.9671" upper="2.9671" effort="50" velocity="1"/>
+  </joint>
+  <link name="Link1_L">
+    <visual><origin xyz="0 0.05 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.045" length="0.10"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint2_L" type="revolute">
+    <parent link="Link1_L"/><child link="Link2_L"/>
+    <origin xyz="0 0.10 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit lower="-3.1416" upper="3.1416" effort="50" velocity="1"/>
+  </joint>
+  <link name="Link2_L">
+    <visual><origin xyz="0.13 0 0" rpy="0 0 0"/><geometry><box size="0.26 0.07 0.07"/></geometry><material name="arm_silver"/></visual>
+    <collision><origin xyz="0.13 0 0" rpy="0 0 0"/><geometry><box size="0.26 0.07 0.07"/></geometry></collision>
+  </link>
+  <joint name="Joint3_L" type="revolute">
+    <parent link="Link2_L"/><child link="Link3_L"/>
+    <origin xyz="0.26 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-2.9671" upper="2.9671" effort="40" velocity="1"/>
+  </joint>
+  <link name="Link3_L">
+    <visual><origin xyz="0.11 0 0" rpy="0 0 0"/><geometry><box size="0.22 0.06 0.06"/></geometry><material name="arm_silver"/></visual>
+    <collision><origin xyz="0.11 0 0" rpy="0 0 0"/><geometry><box size="0.22 0.06 0.06"/></geometry></collision>
+  </link>
+  <joint name="Joint4_L" type="revolute">
+    <parent link="Link3_L"/><child link="Link4_L"/>
+    <origin xyz="0.22 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/><limit lower="-3.1416" upper="3.1416" effort="20" velocity="1"/>
+  </joint>
+  <link name="Link4_L">
+    <visual><origin xyz="0.04 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.045" length="0.08"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint5_L" type="revolute">
+    <parent link="Link4_L"/><child link="Link5_L"/>
+    <origin xyz="0.08 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit lower="-2.0944" upper="2.0944" effort="20" velocity="1"/>
+  </joint>
+  <link name="Link5_L">
+    <visual><origin xyz="0.05 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.04" length="0.10"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint6_L" type="revolute">
+    <parent link="Link5_L"/><child link="Link6_L"/>
+    <origin xyz="0.10 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-2.0944" upper="2.0944" effort="10" velocity="1"/>
+  </joint>
+  <link name="Link6_L">
+    <visual><origin xyz="0.04 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.035" length="0.08"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint7_L" type="revolute">
+    <parent link="Link6_L"/><child link="Link7_L"/>
+    <origin xyz="0.08 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/><limit lower="-3.1416" upper="3.1416" effort="10" velocity="1"/>
+  </joint>
+  <link name="Link7_L">
+    <visual><origin xyz="0.015 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.04" length="0.03"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <!-- 末端法兰（IK 正解锚点：scene/ik.ts 按 tool0_L 取世界位姿） -->
+  <joint name="tool0_L_joint" type="fixed">
+    <parent link="Link7_L"/><child link="tool0_L"/>
+    <origin xyz="0.03 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="tool0_L"/>
+  <!-- 平行夹爪（prismatic 0~0.03m 单指行程：与 driveGripper 的 stroke 映射一致） -->
+  <joint name="gripper_L_joint" type="prismatic">
+    <parent link="Link7_L"/><child link="gripper_L_finger_link"/>
+    <origin xyz="0.03 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/><limit lower="0" upper="0.03" effort="30" velocity="0.1"/>
+  </joint>
+  <link name="gripper_L_finger_link">
+    <visual><origin xyz="0.04 0 0" rpy="0 0 0"/><geometry><box size="0.06 0.02 0.02"/></geometry><material name="gripper_orange"/></visual>
+  </link>
+
+  <!-- ─── 右臂（镜像左臂：肩挂 -Y 一侧；关节名/结构完全对称） ─── -->
+  <joint name="Joint1_R" type="revolute">
+    <parent link="torso_link"/><child link="Link1_R"/>
+    <origin xyz="0 -0.20 0.28" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-2.9671" upper="2.9671" effort="50" velocity="1"/>
+  </joint>
+  <link name="Link1_R">
+    <visual><origin xyz="0 -0.05 0" rpy="1.5708 0 0"/><geometry><cylinder radius="0.045" length="0.10"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint2_R" type="revolute">
+    <parent link="Link1_R"/><child link="Link2_R"/>
+    <origin xyz="0 -0.10 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit lower="-3.1416" upper="3.1416" effort="50" velocity="1"/>
+  </joint>
+  <link name="Link2_R">
+    <visual><origin xyz="0.13 0 0" rpy="0 0 0"/><geometry><box size="0.26 0.07 0.07"/></geometry><material name="arm_silver"/></visual>
+    <collision><origin xyz="0.13 0 0" rpy="0 0 0"/><geometry><box size="0.26 0.07 0.07"/></geometry></collision>
+  </link>
+  <joint name="Joint3_R" type="revolute">
+    <parent link="Link2_R"/><child link="Link3_R"/>
+    <origin xyz="0.26 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-2.9671" upper="2.9671" effort="40" velocity="1"/>
+  </joint>
+  <link name="Link3_R">
+    <visual><origin xyz="0.11 0 0" rpy="0 0 0"/><geometry><box size="0.22 0.06 0.06"/></geometry><material name="arm_silver"/></visual>
+    <collision><origin xyz="0.11 0 0" rpy="0 0 0"/><geometry><box size="0.22 0.06 0.06"/></geometry></collision>
+  </link>
+  <joint name="Joint4_R" type="revolute">
+    <parent link="Link3_R"/><child link="Link4_R"/>
+    <origin xyz="0.22 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/><limit lower="-3.1416" upper="3.1416" effort="20" velocity="1"/>
+  </joint>
+  <link name="Link4_R">
+    <visual><origin xyz="0.04 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.045" length="0.08"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint5_R" type="revolute">
+    <parent link="Link4_R"/><child link="Link5_R"/>
+    <origin xyz="0.08 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/><limit lower="-2.0944" upper="2.0944" effort="20" velocity="1"/>
+  </joint>
+  <link name="Link5_R">
+    <visual><origin xyz="0.05 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.04" length="0.10"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint6_R" type="revolute">
+    <parent link="Link5_R"/><child link="Link6_R"/>
+    <origin xyz="0.10 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/><limit lower="-2.0944" upper="2.0944" effort="10" velocity="1"/>
+  </joint>
+  <link name="Link6_R">
+    <visual><origin xyz="0.04 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.035" length="0.08"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="Joint7_R" type="revolute">
+    <parent link="Link6_R"/><child link="Link7_R"/>
+    <origin xyz="0.08 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/><limit lower="-3.1416" upper="3.1416" effort="10" velocity="1"/>
+  </joint>
+  <link name="Link7_R">
+    <visual><origin xyz="0.015 0 0" rpy="0 1.5708 0"/><geometry><cylinder radius="0.04" length="0.03"/></geometry><material name="arm_silver"/></visual>
+  </link>
+  <joint name="tool0_R_joint" type="fixed">
+    <parent link="Link7_R"/><child link="tool0_R"/>
+    <origin xyz="0.03 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="tool0_R"/>
+  <joint name="gripper_R_joint" type="prismatic">
+    <parent link="Link7_R"/><child link="gripper_R_finger_link"/>
+    <origin xyz="0.03 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/><limit lower="0" upper="0.03" effort="30" velocity="0.1"/>
+  </joint>
+  <link name="gripper_R_finger_link">
+    <visual><origin xyz="0.04 0 0" rpy="0 0 0"/><geometry><box size="0.06 0.02 0.02"/></geometry><material name="gripper_orange"/></visual>
+  </link>
+
+</robot>

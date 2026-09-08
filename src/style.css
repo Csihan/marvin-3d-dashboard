@@ -1,0 +1,12 @@
+/**
+ * @file    style.css
+ * @brief   全局样式占位（实际样式已全部迁移至 App.vue <style> 块）
+ * @author Csihan
+ * @date    2026-08-28
+ *
+ * 说明：
+ *   - 本文件在 main.ts 中通过 import './style.css' 引入；
+ *   - App.vue 的 <style> 块包含全部全局/组件级样式（CSS 变量、HUD 布局、动画）；
+ *   - 保留本文件避免 Vite 构建警告（空 CSS import 会被 tree-shake）。
+ */
+/* 全局样式已迁移至 App.vue 的 <style> 块 */

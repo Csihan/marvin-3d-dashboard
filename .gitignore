@@ -1,0 +1,44 @@
+# ============================================================
+# .gitignore —— marvin-3d-dashboard（公开仓库）
+# @file    .gitignore
+# @brief   Node/构建产物/杂物排除清单
+# @author  Csihan
+# @date    2026-09-08
+# ============================================================
+
+# 依赖与构建产物（npm install / vite build 重建）
+node_modules
+dist
+dist-ssr
+*.local
+
+# 日志
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 打包产物与临时目录（npm pack 产出、调试临时文件不入库）
+*.tgz
+tmp/
+
+# 评审/内部报告目录（开源仓库不携带）
+reports/
+
+# Python 缓存（tools/ 下脚本的本地产物）
+__pycache__/
+*.pyc
+
+# 编辑器与系统文件
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

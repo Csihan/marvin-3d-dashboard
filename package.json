@@ -1,0 +1,71 @@
+{
+  "name": "marvin-3d-dashboard",
+  "version": "0.1.0",
+  "description": "MARVIN 双臂人形机器人 Web 3D 大屏（开源模板：Vue3 + TS + Three.js + urdf-loader + roslibjs；npm i -g 全局安装后 marvin 命令直接启动 3D 大屏）",
+  "type": "module",
+  "bin": {
+    "marvin": "bin/marvin.cjs"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "QUICKSTART.md"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "prepare": "node -e \"console.log('[marvin] npm i -g marvin-3d-dashboard 之后用 marvin 命令启动')\"",
+    "marvin:dev": "node bin/marvin.cjs",
+    "marvin": "node bin/marvin.cjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "marvin",
+    "humanoid",
+    "robot",
+    "ros",
+    "rosbridge",
+    "dashboard",
+    "3d",
+    "urdf",
+    "urdf-loader",
+    "threejs",
+    "vue"
+  ],
+  "homepage": "https://github.com/Csihan/marvin-3d-dashboard#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Csihan/marvin-3d-dashboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Csihan/marvin-3d-dashboard/issues"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@kjgl77/datav-vue3": "^1.7.4",
+    "echarts": "^6.1.0",
+    "gsap": "^3.15.0",
+    "js-yaml": "^5.4.1",
+    "roslib": "^2.1.0",
+    "three": "^0.185.1",
+    "urdf-loader": "^0.13.1",
+    "vue": "^3.5.41"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^24.13.3",
+    "@types/roslib": "^1.3.5",
+    "@types/three": "^0.185.4",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/tsconfig": "^0.9.1",
+    "typescript": "~6.0.2",
+    "vite": "^5.4.21",
+    "vitest": "^4.1.11",
+    "vue-tsc": "^3.3.11"
+  }
+}
