@@ -1,19 +1,46 @@
-# MARVIN 3D Dashboard（marvin-3d-dashboard）
+<div align="center">
 
-> 全屏 3D 整机视图 + 四边纯文本 HUD 的机器人状态大屏（开源模板仓库）。
-> 技术栈：Vue 3 + Vite + TypeScript + Three.js + urdf-loader + roslibjs + GSAP + CSS2DRenderer。
->
-> [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-> ![Vue3](https://img.shields.io/badge/Vue-3.x-42b883) ![Three.js](https://img.shields.io/badge/Three.js-r185-black) ![urdf-loader](https://img.shields.io/badge/urdf--loader-0.13-8A2BE2)
+# 🤖 MARVIN 3D Dashboard
 
-## 开源示例说明（先读这段）
+**开源的机器人 Web 3D 遥操作 / 状态大屏模板 —— 双臂人形轮式机器人开箱即用**
 
-**本仓库是一个可二次开发的模板**：内置了一个纯 primitive 几何的开源示例机器人
-（`public/models/urdf/demo_robot.urdf`，双臂 7-DOF + 4WS 底盘 + 升降躯干 + 双轴头部，
-不含任何第三方 mesh 资产，版权干净）。克隆后 `npm install && npm run dev` 即可看到
-可交互的 3D 大屏——模型拖拽、关节控制球、示教面板、键盘 Jog 全部离线可用。
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Vue 3](https://img.shields.io/badge/Vue-3.x-42b883)](https://vuejs.org/)
+[![Three.js](https://img.shields.io/badge/Three.js-r185-black)](https://threejs.org/)
+[![urdf-loader](https://img.shields.io/badge/urdf--loader-0.13-8A2BE2)](https://github.com/gkjohnson/urdf-loader)
+[![ROS](https://img.shields.io/badge/ROS-rosbridge-22314E)](http://wiki.ros.org/rosbridge_suite)
+[![CI](https://github.com/Csihan/marvin-3d-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Csihan/marvin-3d-dashboard/actions)
 
-**接入你的真实机器人**只需三步：
+*纯前端实现 · 无需 ROS 也能浏览 · 三步接入你的机器人*
+
+![MARVIN 3D Dashboard](docs/screenshot-dashboard.png)
+
+</div>
+
+## 这是什么
+
+一个用 **Vue 3 + TypeScript + Three.js + urdf-loader + roslibjs** 打造的机器人 3D
+数字孪生大屏：左侧是可拖拽旋转的整机 3D 视图（URDF 直驱、关节级联动），四边是
+纯文本 HUD 实时状态，支持**浏览器端直接遥操作**——拖关节控制球、键盘六轴 Jog、
+底盘升降/弯腰滑杆，命令经安全门禁下发到 ROS。
+
+我把它做成**模板**而不是封闭成品：内置一台纯几何示例机器人，克隆即跑；
+换成你自己的 URDF，就是你机器人的控制台。
+
+```bash
+git clone https://github.com/Csihan/marvin-3d-dashboard.git
+cd marvin-3d-dashboard && npm install && npm run dev   # http://localhost:5173
+
+# 不想克隆？也可以当全局 CLI 用（服务构建产物，自动开浏览器）
+npm install -g marvin-3d-dashboard
+marvin                                                  # http://localhost:8080
+```
+
+## 🦾 接入你的机器人（三步）
+
+内置示例 `demo_robot.urdf` 是一台纯 primitive 几何的开源示例机器人（双臂 7-DOF +
+4WS 底盘 + 升降躯干 + 双轴头部，不含任何第三方 mesh 资产，版权干净）。
+接入你自己的真实机器人只需三步：
 
 1. 把你的整机 URDF（xacro 需先展开成静态 URDF）放到 `public/models/urdf/`；
 2. 若 URDF 使用 `package://` mesh 路径：mesh 拷到 `public/models/urdf/meshes/<包名>/`，
@@ -22,43 +49,43 @@
    改成你的文件名。关节命名若与示例不同，同步调整 `ARM_JOINTS`/`labels.ts` 等
    常量（都有注释标注）。
 
-> 命名约定：示例模型沿用 `Joint1~7_L/R`（双臂）、`gripper_L/R_joint`（夹爪，
-> prismatic 单指 0~0.03m）、`head_yaw/pitch_joint`（头部）、`torso_lift_joint`
-> （躯干升降 prismatic 0~0.55m）与 4 轮 4 转向关节——如果你的机器人同名，
-> 前端零改动即可驱动。
+> **命名约定**：示例模型用 `Joint1~7_L/R`（双臂）、`gripper_L/R_joint`（夹爪）、
+> `head_yaw/pitch_joint`（头部）、`torso_lift_joint`（升降）与 4 轮 4 转向关节——
+> 同名即可零改动驱动；不同名则同步调整常量即可。
+> 拖动方向与真机相反？翻转 `CHASSIS_AXIS_SIGN` 或用 `INVERT_JOINTS` 校准表逐关节吸收。
 
-## 快速上手
+> **没有 ROS 环境也能玩**：页面右上角显示「ROS 未连接」是正常的——3D 模型拖拽、
+> 关节控制球、示教面板、键盘 Jog 全部离线可用，只有命令下发被安全门禁拦截。
+> 接上 rosbridge（`:9090`）自动变绿，详见 [QUICKSTART.md](QUICKSTART.md)。
 
-```bash
-# 源码开发模式
-git clone https://github.com/Csihan/marvin-3d-dashboard.git
-cd marvin-3d-dashboard && npm install && npm run dev    # http://localhost:5173
+## ✨ 特性
 
-# 或 npm 全局安装（CLI 一键启动，服务 dist/ 构建产物）
-npm install -g marvin-3d-dashboard
-marvin                                                   # http://localhost:8080
+- 🖥️ **全屏 3D 数字孪生**：整机 URDF 直驱（非碎片化 GLB），模型结构与关节语义同源；
+- 🎮 **浏览器遥操作**：3D 关节控制球（左键直拖 / Alt 精细×0.1 / 120ms 节流 / 松手补发终值）、
+  键盘六轴 Jog（按住持续移动、松开即停、三档步长）、示教面板、底盘升降/弯腰滑杆；
+- 🛡️ **安全门禁**：所有命令经 `simulation_only` 总闸，未授权环境冻结下发——先能看，再敢动；
+- 📊 **四边纯文本 HUD**：双臂 J1~J7 / 双爪开度速度力度 / 头部 / 底盘 10 电机明细，信息密度优先；
+- 🔌 **链路自愈**：断线退避重连、假活看门狗、出站金丝雀、服务超时，rosbridge 掉线自动恢复；
+- ⚙️ **运行时可配置**：`dashboard.yaml` 改完 F5 即生效，键缺失逐键回退，不会白屏；
+- 🧪 **工程完备**：vitest 57+ 单测、vue-tsc 类型门禁、GitHub Actions CI、MIT 开源。
+
+## 📐 界面布局
+
+```
+┌──────────── HEADSTRIP（头部 左右摇头/上下点头）──────────┐
+│ ARM_L 左臂                                GRIP_L 左爪    │
+│                  (3D 整机视图居中)                        │
+│ ARM_R 右臂                                GRIP_R 右爪    │
+│        ChassisStrip（行走1~4/转向1~4/升降/弯腰）         │
+└──────────────────────────────────────────────────────────┘
 ```
 
-连接真实/仿真机器人：装好 rosbridge_suite 并启动 `rosbridge_websocket.launch`
-（`:9090`），详见 [QUICKSTART.md](QUICKSTART.md)。
+- 左列双臂：模式 M0~M4 / FSM / J1~J7 角度 / 错误 / 软急停；
+- 右列双爪：开度 % 大字 / 速度 / 力度 / 夹持状态；
+- 顶条头部、底条底盘 10 电机明细（编码器/速度/电流/状态码/错误码）；
+- 数据区无背景无边框、11px 等宽正文、10px 宽字距标题——信息密度优先的大屏风格。
 
-## 布局（四边纯文本 HUD，去卡片化）
-
-```
-┌──────────── HEADSTRIP（头部 左右/上下）────────────┐
-│ ARM_L 左臂                          GRIP_L 左爪    │
-│ ARM_R 右臂                          GRIP_R 右爪    │
-│          ChassisStrip（行走1~4/转向1~4/升降/弯腰）    │
-└────────────────────────────────────────────────────┘
-```
-
-- 左列双臂（L 上 / R 下）：模式 M0~M4 / FSM / J1~J7 角度 / 错误 / 软急停；
-- 右列双爪（L 上 / R 下）：开度 % 大字 / 速度 / 力度 / 夹持状态；
-- 顶条头部、底条底盘 10 电机明细（行走1~4/转向1~4/升降/弯腰；编码器/速度/电流/状态码/错误码）；
-- 样式：数据区无背景无边框，可选 `--hud-tint: rgba(4,10,22,.25)` 超低透明衬底；
-  标题 10px 大写宽字距、正文 11px 等宽。
-
-## 数据链路
+## 🔗 数据链路
 
 ```
 ROS 节点(arm/motor/comms) ──/robot/status(std_msgs/String JSON)──▶ rosbridge :9090
@@ -71,7 +98,7 @@ ROS 节点(arm/motor/comms) ──/robot/status(std_msgs/String JSON)──▶ r
                                                                         （URDF 关节名直驱）
 ```
 
-## 底盘控制
+## 🎮 底盘控制（浏览器遥操作）
 
 点击 3D 底盘任意部位 → 弹出底盘控制面板 `ChassisPanel.vue`：
 
@@ -106,18 +133,18 @@ ROS 节点(arm/motor/comms) ──/robot/status(std_msgs/String JSON)──▶ r
 球拖动/滑杆方向若与你的真机运动相反：翻转 `useRobot3D.ts` 中 `CHASSIS_AXIS_SIGN`（±1）即可；
 关节级方向差异同理用 `INVERT_JOINTS` 校准表逐关节吸收。
 
-## 模型链路（URDFLoader + 整机 URDF）
+## 🧩 模型管线
 
 - **选型**：整机 URDF（而非碎片化 GLB）——模型结构与关节语义同源，关节名直驱；
-- **根因知识**：浏览器 URDFLoader 不解析 `package://` 与 xacro → 必须预展开 + 提供 packages 映射；
-- 管线参考：`tools/export_web_urdf.sh`（xacro 展开 + mesh 收集的通用模板，按你的
-  工作空间改三个路径变量）+ `tools/ascii_stl_to_binary.py`（ASCII→binary STL 体积减半）；
+- **根因知识**：浏览器 URDFLoader 不解析 `package://` 与 xacro → 必须预展开 + 提供 packages 映射
+  （这是"URDF 上不了 Web"的最常见根因，`PACKAGE_MAP` 就是解法）；
+- 配套工具：`tools/export_web_urdf.sh`（xacro 展开 + mesh 收集模板）、
+  `tools/ascii_stl_to_binary.py`（ASCII→binary STL 体积减半）、
+  `tools/shot_dashboard.py`（README 运行截图生成）；
 - 内置示例 `public/models/urdf/demo_robot.urdf` 全部用 URDF primitive 几何
-  （box/cylinder），urdf-loader 原生解析，无需 mesh 文件；
-- `useRobot3D.ts` 中 `PACKAGE_MAP` 把 `package://pkg/…` 映射到
-  `/models/urdf/meshes/pkg/…`（内置示例为空映射，接入真实模型时按需登记）。
+  （box/cylinder），urdf-loader 原生解析，无需 mesh 文件，零第三方版权负担。
 
-## 运行配置（dashboard.yaml）
+## ⚙️ 运行配置（dashboard.yaml）
 
 现场可调参数集中在 `public/dashboard.yaml`（构建时原样复制到 `dist/dashboard.yaml`，
 **改完浏览器 F5 即生效，无需重新构建**；键缺失/类型错误逐键回退内置默认值，不会白屏）：
@@ -137,7 +164,7 @@ ROS 节点(arm/motor/comms) ──/robot/status(std_msgs/String JSON)──▶ r
   任意机器浏览器访问 `http://<ROS主机IP>:8000` 即可；跨网段/端口受限环境自行用
   防火墙放行 8000/9090/8765 三个端口。
 
-## 构建 / 部署 / 验证
+## 🚀 构建与部署
 
 ### 日常开发循环
 
@@ -165,12 +192,28 @@ npm run preview        # 本地预览构建产物
 `dist/dashboard.yaml` 随构建更新（模型 404 自查：`/models/urdf/demo_robot.urdf`、
 `/models/earth/*` 应全 200）。
 
-## License
+## 🗺️ Roadmap
+
+- [ ] 多机器人同屏（多 URDF 实例）
+- [ ] 轨迹回放时间轴（PVT 轨迹可视化增强）
+- [ ] i18n（中/英）
+- [ ] ROS 2 支持（rosbridge v2 协议适配）
+
+## 🤝 贡献
+
+Issue / PR 欢迎提交：提交前跑 `npm run test && npm run build` 并确保 CI 通过；
+行为改动请附测试。代码注释风格：中文教学式（写清「为什么」，不只写「做了什么」）。
+
+## ⭐ 支持一下
+
+如果这个模板对你的项目有帮助，欢迎点个 Star——这是我持续维护的最大动力。
+
+## 📄 License
 
 [MIT](LICENSE) © 2026 Csihan。内置示例模型（demo_robot.urdf）与全部源码按 MIT 交付；
 接入你自己的机器人模型或第三方资产时，请自行确认相应资产的分发授权。
 
-## 致谢与资产署名
+## 🙏 致谢
 
 - [Vue 3](https://vuejs.org/) / [Vite](https://vitejs.dev/) / [TypeScript](https://www.typescriptlang.org/) / [Three.js](https://threejs.org/) / [urdf-loader](https://github.com/gkjohnson/urdf-loader) / [roslibjs](https://github.com/RobotWebTools/roslibjs) — 本模板依赖的优秀开源项目;
 - `public/models/earth/*` 与 `public/models/planets/*` 贴图来自 [three.js 官方示例资产](https://github.com/mrdoob/three.js/tree/dev/examples/textures)（MIT,著作权归 three.js 作者）;
