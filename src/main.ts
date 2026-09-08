@@ -42,4 +42,3 @@ async function bootstrap(): Promise<void> {
 
 // void 前缀：明确"有意不等待"这个异步流程，启动失败已由 loadDashboardConfig 内部兜底
 void bootstrap()
-

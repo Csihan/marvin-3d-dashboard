@@ -169,3 +169,9 @@ npm run preview        # 本地预览构建产物
 
 [MIT](LICENSE) © 2026 Csihan。内置示例模型（demo_robot.urdf）与全部源码按 MIT 交付；
 接入你自己的机器人模型或第三方资产时，请自行确认相应资产的分发授权。
+
+## 致谢与资产署名
+
+- [Vue 3](https://vuejs.org/) / [Vite](https://vitejs.dev/) / [TypeScript](https://www.typescriptlang.org/) / [Three.js](https://threejs.org/) / [urdf-loader](https://github.com/gkjohnson/urdf-loader) / [roslibjs](https://github.com/RobotWebTools/roslibjs) — 本模板依赖的优秀开源项目;
+- `public/models/earth/*` 与 `public/models/planets/*` 贴图来自 [three.js 官方示例资产](https://github.com/mrdoob/three.js/tree/dev/examples/textures)（MIT,著作权归 three.js 作者）;
+- `public/models/urdf/demo_robot.urdf` 为本仓库原创的 primitive 几何示例,无第三方资产。

@@ -387,4 +387,3 @@ export function createBackground(
     },
   }
 }
-

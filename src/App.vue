@@ -800,8 +800,9 @@ onBeforeUnmount(() => {
       <em v-if="jogActiveFlag">运动中 · 松开即停</em>
     </div>
 
-    <!-- 版本水印（右下角项目名 + 版本号）：公开版不展示内部公司名，改为产品名 -->
-    <div class="watermark">MARVIN 3D Dashboard · V1.0.0</div>
+    <!-- 版本水印（右下角项目名 + 版本号）：公开版不展示内部公司名，改为产品名；
+         版本号与 package.json 同步（单一本源，避免双处维护漂移） -->
+    <div class="watermark">MARVIN 3D Dashboard · v0.1.0</div>
 
     <!-- 全局轻量提示（退出拖动/状态变化的可见反馈） -->
     <transition name="toast">
